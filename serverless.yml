@@ -1,0 +1,96 @@
+service: serverless-FileDrop
+
+frameworkVersion: '2'
+
+custom:
+  serverless-offline:
+    httpPort: 4000
+  s3Sync:
+  - bucketName: ${self:custom.prefix}-filedrop-site
+    localDir: frontend
+    defaultContentType: text/html
+  bucketname: ${self:custom.prefix}-filedrop
+  prefix: ${env:PREFIX}
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${env:ENV, 'dev'}
+  lambdaHashingVersion: '20201221'
+  logRetentionInDays: 30
+  deploymentBucket:
+    blockPublicAccess: true
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+    - s3:ListBucket
+    - s3:PutObject
+    - s3:GetObject
+    Resource:
+    - arn:aws:s3:::${self:custom.bucketname}
+    - arn:aws:s3:::${self:custom.bucketname}/*
+  environment:
+    ENV: ${stage}
+    BUCKET_NAME: ${self:custom.bucketname}
+    URL_EXPIRATION_SECONDS: 3600
+
+package:
+  patterns:
+  - '!.git/**'
+  - '!.github/**'
+  - '!.gitlab-ci.yml'
+
+resources:
+  Resources:
+    UploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketname}
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+        CorsConfiguration:
+          CorsRules:
+          - Id: CorsRuleId
+            AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT]
+            AllowedOrigins: ['*']
+            MaxAge: '3600'
+    WebsiteBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: filedropwebsitebucket22022
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+    WebsiteBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref WebsiteBucket
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+            Resource:
+            - !Join 
+            - - ''
+              - 'arn:aws:s3:::'
+              - !Ref WebsiteBucket
+              - '/'
+            Principal: '*'
+
+functions:
+  run:
+    handler: backend/handler.run
+    events:
+      - http:
+          path: /{Key}
+          method: get
+
+plugins:
+#  - serverless-s3-local
+  - serverless-offline
+  - serverless-s3-sync
