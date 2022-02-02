@@ -11,6 +11,10 @@
                     <input class="form-control" id="file" name="file" type="file"/> <br />
                     <button class="btn btn-primary" id="Button" type="button"> Upload </button>
                 </form>
+                <div class="progress d-none">
+                    <div class="progress-bar" role="progressbar" id="progressBar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                </div>
+                <br />
                 <div class="result">
                 </div>
             </div>
@@ -26,9 +30,11 @@
 
         function sendFile(e)  {
             e.preventDefault();
+            $('#Button').prop('disabled', true);
             
             if($('#file').val() == '') {
-                alert('Please select a file');
+                $( ".result" ).html( '<div class="alert alert-info" role="alert">Please select file first</div>' );
+                $('#Button').prop('disabled', false);
                 return false;
             }
 
@@ -37,31 +43,58 @@
             var fileName = File.name;
             //TODO: Remove hardcode URL
             $.ajax({
-                url: 'https://1fo6hz8lt6.execute-api.us-east-1.amazonaws.com/dev/' + fileName,
+                url: '' + fileName,
                 type: 'GET',
                 success: function(data) {
                     console.log(data);
                     var data = data.message.uploadURL;
                     putFile(data, File);
+                },
+                error: function(data) {
+                    console.log(data);
+                    $( ".result" ).html( '<div class="alert alert-danger" role="alert">Failed start uploading</div>' );
                 }
             });
         }
 
         function putFile(url, File) {
+            $('#progress').removeClass('d-none');
             $.ajax({
                 type: 'PUT',
                 url: url,
                 contentType: 'binary/octet-stream',
                 processData: false,
                 data: File,
+                xhr: function(){
+                    var xhr = new window.XMLHttpRequest();
+                    //Upload progress
+                    xhr.upload.addEventListener("progress", function(evt){
+                    if (evt.lengthComputable) {
+                        var percentComplete = (evt.loaded / evt.total * 100).toFixed(0);
+                        //Do something with upload progress
+                        console.log(percentComplete);
+                        $('#progressBar').attr('aria-valuenow', percentComplete).css('width', percentComplete+'%').html(percentComplete+'%');
+                        }
+                    }, false);
+                    //Download progress
+                    xhr.addEventListener("progress", function(evt){
+                        if (evt.lengthComputable) {
+                        var percentComplete = evt.loaded / evt.total;
+                        //Do something with download progress
+                        console.log(percentComplete);
+                        }
+                    }, false);
+                    return xhr;
+                    },
                 success: function(data) {
-                    console.log(data);
-                    $( ".result" ).append( "<p>Upload successful</p>" );
+                    $( ".result" ).html( '<div class="alert alert-success" role="alert">Uploaded successful</div>' );
                     $("#file").val(null);
+                    $('#Button').prop('disabled', false);
                 },
                 error: function(data) {
                     console.log(data);
-                    $( ".result" ).append( "<p>Upload failed</p>" );
+                    $( ".result" ).html( '<div class="alert alert-danger" role="alert">Upload failed</div>' );
+                    $('#Button').prop('disabled', false);
                 }
             });
         }

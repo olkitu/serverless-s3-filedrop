@@ -39,6 +39,7 @@ package:
   - '!.git/**'
   - '!.github/**'
   - '!.gitlab-ci.yml'
+  - '!node_modules/**'
 
 resources:
   Resources:
@@ -60,7 +61,7 @@ resources:
     WebsiteBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: filedropwebsitebucket22022
+        BucketName: ${self:custom.prefix}-filedrop-site
         AccessControl: PublicRead
         WebsiteConfiguration:
           IndexDocument: index.html
@@ -74,12 +75,11 @@ resources:
           - Effect: Allow
             Action:
             - s3:GetObject
-            Resource:
-            - !Join 
-            - - ''
-              - 'arn:aws:s3:::'
-              - !Ref WebsiteBucket
-              - '/'
+            Resource: !Join 
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref WebsiteBucket
+                - '/*'
             Principal: '*'
 
 functions:
