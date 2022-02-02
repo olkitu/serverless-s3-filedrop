@@ -30,7 +30,7 @@ provider:
     - arn:aws:s3:::${self:custom.bucketname}
     - arn:aws:s3:::${self:custom.bucketname}/*
   environment:
-    ENV: ${stage}
+    ENV: ${sls:stage}
     BUCKET_NAME: ${self:custom.bucketname}
     URL_EXPIRATION_SECONDS: 3600
 
@@ -58,6 +58,11 @@ resources:
             AllowedMethods: [GET, PUT]
             AllowedOrigins: ['*']
             MaxAge: '3600'
+        LifecycleConfiguration:
+          Rules:
+          - Id: RemoveFilesInXDays
+            Status: Enabled
+            ExpirationInDays: ${env:EXPIRATIONINDAYS, 30}
     WebsiteBucket:
       Type: AWS::S3::Bucket
       Properties:
