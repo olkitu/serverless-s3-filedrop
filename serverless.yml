@@ -32,7 +32,6 @@ provider:
   environment:
     ENV: ${sls:stage}
     BUCKET_NAME: ${self:custom.bucketname}
-    URL_EXPIRATION_SECONDS: 3600
 
 package:
   patterns:
@@ -40,6 +39,9 @@ package:
   - '!.github/**'
   - '!.gitlab-ci.yml'
   - '!node_modules/**'
+  - '!Dockerfile'
+  - '!*.sh'
+  - '!docker-compose.yml'
 
 resources:
   Resources:
@@ -67,9 +69,6 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.prefix}-filedrop-site
-        AccessControl: PublicRead
-        WebsiteConfiguration:
-          IndexDocument: index.html
     WebsiteBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
@@ -85,7 +84,8 @@ resources:
               - - 'arn:aws:s3:::'
                 - !Ref WebsiteBucket
                 - '/*'
-            Principal: '*'
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
     CloudFront:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -113,10 +113,11 @@ resources:
             MinTTL: 0
             MaxTTL: 0
           Origins:
-          - DomainName: !Sub ${self:custom.prefix}-filedrop-site.s3-${AWS::Region}.amazonaws.com
+          - DomainName: !Join ['', [!Ref WebsiteBucket, !Sub '.s3.${AWS::Region}.amazonaws.com']]
             Id: S3Origin
-            CustomOriginConfig:
-              OriginProtocolPolicy: http-only
+            S3OriginConfig:
+              OriginAccessIdentity:
+                !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
           - DomainName: !Join
             - ''
             - - Ref: ApiGatewayRestApi
@@ -130,6 +131,11 @@ resources:
           PriceClass: PriceClass_100
           ViewerCertificate:
             CloudFrontDefaultCertificate: 'true'
+    CloudFrontOriginAccessIdentity:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: OAI for S3 Access
   Outputs:
     CloudfrontDomainName:
       Description: DomainName of CloudFront Endpoint

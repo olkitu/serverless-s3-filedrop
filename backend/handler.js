@@ -26,7 +26,7 @@ module.exports.run = async (event) => {
     const s3Params = {
       Bucket: process.env.BUCKET_NAME,
       Key: Key,
-      Expires: Number(process.env.URL_EXPIRATION_SECONDS)
+      Expires: 300
     }
   
     console.log('Params: ', s3Params)
