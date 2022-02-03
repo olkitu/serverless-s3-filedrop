@@ -113,7 +113,7 @@ resources:
             MinTTL: 0
             MaxTTL: 0
           Origins:
-          - DomainName: ${self:custom.prefix}-filedrop-site.s3.amazonaws.com
+          - DomainName: !Sub ${self:custom.prefix}-filedrop-site.s3-${AWS::Region}.amazonaws.com
             Id: S3Origin
             CustomOriginConfig:
               OriginProtocolPolicy: http-only
@@ -132,7 +132,7 @@ resources:
             CloudFrontDefaultCertificate: 'true'
   Outputs:
     CloudfrontDomainName:
-      Description: DomaiName of CloudFront Endpoint
+      Description: DomainName of CloudFront Endpoint
       Value: !GetAtt CloudFront.DomainName
       Export:
         Name: !Sub sls-${AWS::StackName}-CloudFrontDomainName
