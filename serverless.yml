@@ -86,13 +86,64 @@ resources:
                 - !Ref WebsiteBucket
                 - '/*'
             Principal: '*'
+    CloudFront:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: 'true'
+          DefaultRootObject: 'index.html'
+          DefaultCacheBehavior:
+            AllowedMethods:
+            - GET
+            - HEAD
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+            ForwardedValues:
+              QueryString: 'false'
+          CacheBehaviors:
+          - AllowedMethods:
+            - GET
+            - HEAD
+            TargetOriginId: APIOrigin
+            ForwardedValues:
+              QueryString: 'false'
+            ViewerProtocolPolicy: 'https-only'
+            PathPattern: '/api/*'
+            DefaultTTL: 0
+            MinTTL: 0
+            MaxTTL: 0
+          Origins:
+          - DomainName: ${self:custom.prefix}-filedrop-site.s3.amazonaws.com
+            Id: S3Origin
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+          - DomainName: !Join
+            - ''
+            - - Ref: ApiGatewayRestApi
+              - !Sub ".execute-api.${AWS::Region}.amazonaws.com"
+            Id: APIOrigin
+            OriginPath: /${self:provider.stage}
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+              - TLSv1.2
+          PriceClass: PriceClass_100
+          ViewerCertificate:
+            CloudFrontDefaultCertificate: 'true'
+  Outputs:
+    CloudfrontDomainName:
+      Description: DomaiName of CloudFront Endpoint
+      Value: !GetAtt CloudFront.DomainName
+      Export:
+        Name: !Sub sls-${AWS::StackName}-CloudFrontDomainName
+      
 
 functions:
   run:
     handler: backend/handler.run
     events:
       - http:
-          path: /{Key}
+          path: /api/{Key}
           method: get
 
 plugins:

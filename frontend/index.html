@@ -45,7 +45,7 @@
             var fileName = File.name;
             //TODO: Remove hardcode URL
             $.ajax({
-                url: '' + fileName,
+                url: '/api/' + fileName,
                 type: 'GET',
                 success: function(data) {
                     var data = data.message.uploadURL;
