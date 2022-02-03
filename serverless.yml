@@ -105,6 +105,7 @@ resources:
       Properties:
         DistributionConfig:
           Enabled: 'true'
+          HttpVersion: http2
           DefaultRootObject: 'index.html'
           DefaultCacheBehavior:
             AllowedMethods:
@@ -155,7 +156,7 @@ resources:
       Description: DomainName of CloudFront Endpoint
       Value: !GetAtt CloudFront.DomainName
       Export:
-        Name: !Sub ${self:service}:${sls:stage}-CloudFrontDomainName
+        Name: !Sub ${self:service}-${sls:stage}-CloudFrontDomainName
       
 
 functions:
