@@ -14,11 +14,13 @@ custom:
     directory: /tmp
   bucketname: ${self:custom.prefix}-filedrop
   prefix: ${env:PREFIX}
+  stage: ${env:ENV, 'dev'}
 
 provider:
   name: aws
   runtime: nodejs12.x
-  stage: ${env:ENV, 'dev'}
+  stage: ${self:custom.stage}
+  stackName: ${self:custom.prefix}-filedrop
   lambdaHashingVersion: '20201221'
   logRetentionInDays: 30
   deploymentBucket:
@@ -32,9 +34,18 @@ provider:
     Resource:
     - arn:aws:s3:::${self:custom.bucketname}
     - arn:aws:s3:::${self:custom.bucketname}/*
+  - Effect: Allow
+    Action: 
+    - ses:SendEmail
+    - ses:SendRawEmail
+    Resource: '*'
+  stackTags:
+    Service: filedrop
   environment:
-    ENV: ${sls:stage}
+    ENV: ${self:custom.stage}
     BUCKET_NAME: ${self:custom.bucketname}
+    FROM_ADDRESS: ${env:FROM_ADDRESS, 'noreply@example.org'}
+    TO_ADDRESS: ${env:TO_ADDRESS, 'email@example.org'}
 
 package:
   patterns:
@@ -144,16 +155,23 @@ resources:
       Description: DomainName of CloudFront Endpoint
       Value: !GetAtt CloudFront.DomainName
       Export:
-        Name: !Sub sls-${AWS::StackName}-CloudFrontDomainName
+        Name: !Sub ${self:service}:${sls:stage}-CloudFrontDomainName
       
 
 functions:
-  run:
-    handler: backend/handler.run
+  api:
+    handler: backend/api.run
     events:
       - http:
           path: /api/{Key}
           method: get
+  notify:
+    handler: backend/notify.run
+    events:
+      - s3:
+          bucket: ${self:custom.prefix}-filedrop
+          event: s3:ObjectCreated:*
+          existing: true
 
 plugins:
   - serverless-offline

@@ -2,6 +2,9 @@
 
 Simple File Drop service to run in AWS. 
 
+* Upload using Pregenerated URL via Web UI
+* Notification and download link when new file uploaded
+
 ## Deploy
 
 You have to setup AWS Access Keys to deploy.
