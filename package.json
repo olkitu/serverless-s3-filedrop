@@ -1,6 +1,6 @@
 {
   "name": "serverless-filedropper",
-  "description": "<!-- title: 'AWS Simple HTTP Endpoint example in NodeJS' description: 'This template demonstrates how to make a simple REST API with Node.js running on AWS Lambda and API Gateway using the traditional Serverless Framework.' layout: Doc framework: v2 platform: AWS language: nodeJS priority: 1 authorLink: 'https://github.com/serverless' authorName: 'Serverless, inc.' authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4' -->",
+  "description": "A serverless app to upload files to S3",
   "version": "1.0.0",
   "main": "handler.js",
   "dependencies": {
@@ -8,8 +8,8 @@
   },
   "devDependencies": {
     "serverless": "^2.7.2",
+    "serverless-dotenv-plugin": "^3.12.2",
     "serverless-offline": "^8.4.0",
-    "serverless-s3-local": "^0.6.21",
     "serverless-s3-sync": "^1.17.3"
   },
   "scripts": {

@@ -15,5 +15,20 @@ npm ci
 And then deploy to AWS. Change `PREFIX` to prefix you like to use. This will be used in S3 bucket name eg.
 
 ```
-ENV=stage PREFIX=prefixULikeToChoose serverless deploy
+cp .env.example .env
+serverless deploy
+```
+
+## Develop
+
+Install required Node-packages
+
+```
+npm ci
+```
+
+Start development environment. This will start API Gateway in localhost:4000.
+
+```
+serverless offline
 ```

@@ -9,6 +9,9 @@ custom:
   - bucketName: ${self:custom.prefix}-filedrop-site
     localDir: frontend
     defaultContentType: text/html
+  s3:
+    host: localhost
+    directory: /tmp
   bucketname: ${self:custom.prefix}-filedrop
   prefix: ${env:PREFIX}
 
@@ -153,6 +156,6 @@ functions:
           method: get
 
 plugins:
-#  - serverless-s3-local
   - serverless-offline
   - serverless-s3-sync
+  - serverless-dotenv-plugin
