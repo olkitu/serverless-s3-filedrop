@@ -15,7 +15,7 @@ module.exports.run = async (event) => {
     const s3Params = {
         Bucket: Bucket,
         Key: Key,
-        Expires: 300
+        Expires: 604800
       }
 
     const url = await s3.getSignedUrl('getObject', s3Params);

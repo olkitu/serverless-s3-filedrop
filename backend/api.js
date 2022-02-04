@@ -17,16 +17,15 @@ module.exports.run = async (event) => {
     }
   }
 
-  const Key = event.pathParameters.Key
-
-  // TODO: Check if file exist. If exist, return error do not allow overwrite
+  const random = (Math.random() + 1).toString(36).substring(4);
+  const Key = random + '/' + event.pathParameters.Key
 
   async function getUploadURL() {
   
     const s3Params = {
       Bucket: process.env.BUCKET_NAME,
       Key: Key,
-      Expires: 300
+      Expires: 60
     }
   
     console.log('Params: ', s3Params)
