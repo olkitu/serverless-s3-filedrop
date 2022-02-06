@@ -27,7 +27,7 @@ Install required Node-packages
 npm ci
 ```
 
-And then deploy to AWS. Change `PREFIX` to prefix you like to use. This will be used in S3 bucket name eg.
+Configure environment variables in `.env` file before deploy. 
 
 ```
 cp .env.example .env

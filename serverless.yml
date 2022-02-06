@@ -21,6 +21,7 @@ provider:
   runtime: nodejs12.x
   stage: ${self:custom.stage}
   stackName: ${self:custom.prefix}-filedrop
+  architecture: ${self:env.ARCH, 'x86_64'}
   lambdaHashingVersion: '20201221'
   logRetentionInDays: 30
   deploymentBucket:
