@@ -5,6 +5,11 @@ frameworkVersion: '2'
 custom:
   serverless-offline:
     httpPort: 4000
+    stageVariables:
+      AWS_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID, 'minioadmin'}
+      AWS_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY, 'minio1234'}
+      AWS_S3_ENDPOINT: ${env:AWS_S3_ENDPOINT, 'http://localhost:9000'}
+      NODE_ENV: local
   s3Sync:
   - bucketName: ${self:custom.prefix}-filedrop-site
     localDir: frontend

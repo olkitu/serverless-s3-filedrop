@@ -1,0 +1,78 @@
+version: '2.4'
+services:
+  proxy:
+    image: ghcr.io/olkitu/traefik
+    ports:
+    - 80:80
+    - 8080:8080
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.traefik.entrypoints: web
+    command:
+    - "--api.insecure=true"
+    - "--entrypoints.web.address=:80"
+    - "--providers.docker=true"
+    - "--providers.docker.exposedbydefault=false"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+  web:
+    image: nginx:stable
+    volumes:
+    - ${PWD}/frontend:/usr/share/nginx/html:ro
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.web.rule: Host(`localhost`)
+      traefik.http.routers.web.priority: 1
+      traefik.http.routers.web.entrypoints: web
+      traefik.http.services.web.loadbalancer.server.port: 80
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.api.rule: PathPrefix(`/dev/api`) || PathPrefix(`/api`)
+      traefik.http.middlewares.api.replacepath.path: /dev
+      traefik.http.routers.api.priority: 2
+      traefik.http.routers.api.entrypoints: web
+      traefik.http.services.api.loadbalancer.server.port: 4000
+    environment:
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: minio1234
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_S3_ENDPOINT: http://minio:9000
+      BUCKET_NAME: $PREFIX-filedrop
+      prefix: filedrop
+    volumes:
+    - .:/usr/src/app
+    - filedrop_node_modules:/usr/src/app/node_modules
+  minio:
+    image: minio/minio
+    ports:
+    - 9000:9000
+    - 34697:34697
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio1234
+    volumes:
+    - filedrop_minio_data:/data/minio
+    command: minio server /data/minio --console-address=:34697
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:9000/minio/health/live"]
+  mc:
+    image: minio/mc
+    env_file: .env
+    depends_on:
+    - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add minio http://minio:9000 minio minio1234;
+      /usr/bin/mc mb minio/$PREFIX-filedrop;
+      exit 0;
+      "
+
+
+
+volumes:
+  filedrop_node_modules:
+  filedrop_minio_data:

@@ -36,14 +36,24 @@ serverless deploy
 
 ## Develop
 
-Install required Node-packages
+Our development environment is build in Docker. This will create automatically development environment to localhost.
 
 ```
-npm ci
+cp .env.example .env
+docker-compose build
+docker-compose up -d
 ```
 
-Start development environment. This will start API Gateway in localhost:4000.
+With docker-compose will start containers:
 
-```
-serverless offline
-```
+| Container       | Exposed Port(s) | Description                                    |
+|-----------------|-----------------|------------------------------------------------|
+| Proxy (Traefik) | 80, 8080        | Frontend Load Balancer                         |
+| Web (Nginx)     | -               | Webserver for static website                   |
+| API (Node)      | -               | NodeJS API server for Lambda function          |
+| Minio           | 9000, 34697     | Local S3 Bucket                                |
+| Mc (Minio CLI)  | -               | To create automatically S3 bucket during start |
+
+Add to your computer hosts file `127.0.0.1 minio` to use containers in localhost. Minio admin username is `minio` and password `minio1234`.
+
+The email notification function do not work in local environment.
