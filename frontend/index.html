@@ -9,7 +9,7 @@
     <body>
         <div class="container" style="margin-top:20px;">
             <h1>Serverless S3 FileDrop</h1>
-            <p></p>
+            <p>Drag and drop file to upload. Max accepted file size is 2GB.</p>
             <div class="col-md-8">
                 <form method="POST" id="form" enctype="multipart/form-data">
                     <input class="form-control" id="file" name="file" type="file"/> <br />
@@ -42,6 +42,7 @@
             if($('#file').val() == '') {
                 $( "#result" ).html( '<div class="alert alert-info" role="alert">Please choose file first</div>' );
                 $('#Button').prop('disabled', false);
+                $('#file').prop('disabled', false);
                 return false;
             }
 

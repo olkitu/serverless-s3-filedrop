@@ -1,7 +1,7 @@
 version: '2.4'
 services:
   proxy:
-    image: ghcr.io/olkitu/traefik
+    image: traefik:2.8
     ports:
     - 80:80
     - 8080:8080
@@ -18,7 +18,7 @@ services:
   web:
     image: nginx:stable
     volumes:
-    - ${PWD}/frontend:/usr/share/nginx/html:ro
+    - ./frontend:/usr/share/nginx/html:ro
     labels:
       traefik.enable: "true"
       traefik.http.routers.web.rule: Host(`localhost`)
